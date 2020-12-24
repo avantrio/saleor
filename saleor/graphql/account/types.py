@@ -35,7 +35,7 @@ class AddressInput(graphene.InputObjectType):
     country = CountryCodeEnum(description="Country.")
     country_area = graphene.String(description="State or province.")
     phone = graphene.String(description="Phone number.")
-    location_data = graphene.JSONString(description="Location Data.")
+    location_data = graphene.JSONString(description="Location Data.", required=False)
 
 
 @key(fields="id")
