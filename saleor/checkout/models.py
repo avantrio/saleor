@@ -82,6 +82,7 @@ class Checkout(ModelWithMetadata):
         on_delete=models.SET_NULL,
     )
     note = models.TextField(blank=True, default="")
+    vin_number = models.CharField(null=True, blank=True, max_length=255)
 
     currency = models.CharField(max_length=settings.DEFAULT_CURRENCY_CODE_LENGTH,)
     country = CountryField(default=get_default_country)

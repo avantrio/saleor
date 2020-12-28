@@ -185,6 +185,7 @@ class CheckoutCreateInput(graphene.InputObjectType):
         )
     )
     billing_address = AddressInput(description="Billing address of the customer.")
+    vin_number = graphene.String(required=False, description='VIN number.')
 
 
 class CheckoutCreate(ModelMutation, I18nMixin):

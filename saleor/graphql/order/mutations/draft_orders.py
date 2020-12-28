@@ -74,6 +74,9 @@ class DraftOrderInput(InputObjectType):
             "see the order details. URL in RFC 1808 format."
         ),
     )
+    vin_number = graphene.String(
+        required=False, description="VIN number."
+    )
 
 
 class DraftOrderCreateInput(DraftOrderInput):
