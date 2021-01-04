@@ -833,6 +833,7 @@ class CheckoutComplete(BaseMutation):
                 "see the order details. URL in RFC 1808 format."
             ),
         )
+        location_data = graphene.String(required=False)
         payment_data = graphene.JSONString(
             required=False,
             description=(
