@@ -923,7 +923,7 @@ DRAFT_ORDER_CREATE_MUTATION = """
     mutation draftCreate(
         $user: ID, $discount: PositiveDecimal, $lines: [OrderLineCreateInput],
         $shippingAddress: AddressInput, $shippingMethod: ID, $voucher: ID,
-        $customerNote: String, $channel: ID, $redirectUrl: String
+        $customerNote: String, $channel: ID, $redirectUrl: String, $vinNumber:String!
         ) {
             draftOrderCreate(
                 input: {user: $user, discount: $discount,
@@ -931,6 +931,7 @@ DRAFT_ORDER_CREATE_MUTATION = """
                 shippingMethod: $shippingMethod, voucher: $voucher,
                 channel: $channel,
                 redirectUrl: $redirectUrl,
+                vinNumber: $vinNumber,
                 customerNote: $customerNote}) {
                     orderErrors {
                         field
@@ -1005,6 +1006,7 @@ def test_draft_order_create(
         "voucher": voucher_id,
         "customerNote": customer_note,
         "channel": channel_id,
+        "vinNumber": 'test',
         "redirectUrl": redirect_url,
     }
     response = staff_api_client.post_graphql(
@@ -1081,6 +1083,7 @@ def test_draft_order_create_with_inactive_channel(
         "shippingMethod": shipping_id,
         "voucher": voucher_id,
         "customerNote": customer_note,
+        "vinNumber": 'test',
         "channel": channel_id,
     }
     response = staff_api_client.post_graphql(
@@ -1148,6 +1151,7 @@ def test_draft_order_create_variant_with_0_price(
         "lines": variant_list,
         "shippingAddress": shipping_address,
         "shippingMethod": shipping_id,
+        "vinNumber": 'test',
         "channel": channel_id,
     }
     response = staff_api_client.post_graphql(
@@ -1222,6 +1226,7 @@ def test_draft_order_create_tax_error(
         "shippingMethod": shipping_id,
         "voucher": voucher_id,
         "customerNote": customer_note,
+        "vinNumber": 'test',
         "channel": channel_id,
     }
     response = staff_api_client.post_graphql(
@@ -1273,6 +1278,7 @@ def test_draft_order_create_with_voucher_not_assigned_to_order_channel(
         "shippingMethod": shipping_id,
         "voucher": voucher_id,
         "customerNote": customer_note,
+        "vinNumber": 'test',
         "channel": channel_id,
     }
     response = staff_api_client.post_graphql(
@@ -1314,6 +1320,7 @@ def test_draft_order_create_with_product_and_variant_not_assigned_to_order_chann
         "shippingMethod": shipping_id,
         "customerNote": customer_note,
         "channel": channel_id,
+        "vinNumber": 'test',
     }
     response = staff_api_client.post_graphql(
         query, variables, permissions=[permission_manage_orders]
@@ -1353,6 +1360,7 @@ def test_draft_order_create_with_variant_not_assigned_to_order_channel(
         "lines": variant_list,
         "shippingAddress": shipping_address,
         "shippingMethod": shipping_id,
+        "vinNumber": 'test',
         "customerNote": customer_note,
         "channel": channel_id,
     }
@@ -1392,6 +1400,7 @@ def test_draft_order_create_without_channel(
     ]
     variables = {
         "user": user_id,
+        "vinNumber": 'test',
         "lines": variant_list,
     }
     response = staff_api_client.post_graphql(
@@ -1450,6 +1459,7 @@ def test_draft_order_create_with_channel_with_unpublished_product(
         "shippingMethod": shipping_id,
         "voucher": voucher_id,
         "customerNote": customer_note,
+        "vinNumber": 'test',
     }
 
     response = staff_api_client.post_graphql(
@@ -1509,6 +1519,7 @@ def test_draft_order_create_with_channel_with_unpublished_product_by_date(
         "shippingAddress": shipping_address,
         "shippingMethod": shipping_id,
         "voucher": voucher_id,
+        "vinNumber": 'test',
         "customerNote": customer_note,
     }
 
@@ -1565,6 +1576,7 @@ def test_draft_order_create_with_channel(
         "lines": variant_list,
         "shippingAddress": shipping_address,
         "shippingMethod": shipping_id,
+        "vinNumber": 'test',
         "voucher": voucher_id,
         "customerNote": customer_note,
     }
@@ -1603,12 +1615,14 @@ DRAFT_UPDATE_QUERY = """
         $id: ID!,
         $voucher: ID,
         $channel: ID,
+        $vinNumber: String!,
         $customerNote: String
         ) {
             draftOrderUpdate(
                 id: $id,
                 input: {
                     voucher: $voucher,
+                    vinNumber: $vinNumber,
                     customerNote: $customerNote
                     channel: $channel
                 }) {
@@ -1640,6 +1654,7 @@ def test_draft_order_update_existing_channel_id(
     variables = {
         "id": order_id,
         "channel": channel_id,
+        "vinNumber": 'test',
     }
 
     response = staff_api_client.post_graphql(
@@ -1666,6 +1681,7 @@ def test_draft_order_update_voucher_not_available(
     variables = {
         "id": order_id,
         "voucher": voucher_id,
+        "vinNumber": 'test',
     }
 
     response = staff_api_client.post_graphql(
@@ -1680,11 +1696,13 @@ def test_draft_order_update_voucher_not_available(
 
 DRAFT_ORDER_UPDATE_MUTATION = """
     mutation draftUpdate(
-        $id: ID!, $voucher: ID!, $customerNote: String, $shippingAddress: AddressInput
+        $id: ID!, $voucher: ID!, $customerNote: String, $shippingAddress: AddressInput,
+        $vinNumber: String!
     ) {
         draftOrderUpdate(id: $id,
                             input: {
                                 voucher: $voucher,
+                                vinNumber: $vinNumber,
                                 customerNote: $customerNote,
                                 shippingAddress: $shippingAddress,
                             }) {
@@ -1715,6 +1733,7 @@ def test_draft_order_update(
         "id": order_id,
         "voucher": voucher_id,
         "customerNote": customer_note,
+        "vinNumber": 'test',
     }
 
     response = staff_api_client.post_graphql(
@@ -1736,7 +1755,11 @@ def test_draft_order_update_with_non_draft_order(
     order_id = graphene.Node.to_global_id("Order", order.id)
     voucher_id = graphene.Node.to_global_id("Voucher", voucher.id)
     customer_note = "Test customer note"
-    variables = {"id": order_id, "voucher": voucher_id, "customerNote": customer_note}
+    variables = {
+        "id": order_id, "voucher": voucher_id,
+        "vinNumber": 'test',
+        "customerNote": customer_note
+    }
     response = staff_api_client.post_graphql(
         query, variables, permissions=[permission_manage_orders]
     )
@@ -1766,6 +1789,7 @@ def test_draft_order_update_tax_error(
     customer_note = "Test customer note"
     variables = {
         "id": order_id,
+        "vinNumber": 'test',
         "voucher": voucher_id,
         "customerNote": customer_note,
         "shippingAddress": graphql_address_data,
@@ -1791,8 +1815,8 @@ def test_draft_order_update_doing_nothing_generates_no_events(
     assert not OrderEvent.objects.exists()
 
     query = """
-        mutation draftUpdate($id: ID!) {
-            draftOrderUpdate(id: $id, input: {}) {
+        mutation draftUpdate($id: ID!, $vinNumber: String!) {
+            draftOrderUpdate(id: $id, input: {vinNumber: $vinNumber}) {
                 errors {
                     field
                     message
@@ -1802,7 +1826,8 @@ def test_draft_order_update_doing_nothing_generates_no_events(
         """
     order_id = graphene.Node.to_global_id("Order", order_with_lines.id)
     response = staff_api_client.post_graphql(
-        query, {"id": order_id}, permissions=[permission_manage_orders]
+        query, {"id": order_id, "vinNumber": "212"},
+        permissions=[permission_manage_orders]
     )
     get_graphql_content(response)
 
@@ -2688,10 +2713,12 @@ def test_require_draft_order_when_removing_lines(
 
 
 ORDER_UPDATE_MUTATION = """
-    mutation orderUpdate($id: ID!, $email: String, $address: AddressInput) {
+    mutation orderUpdate($id: ID!, $email: String, $address: AddressInput,
+    $vinNumber: String!) {
         orderUpdate(
             id: $id, input: {
                 userEmail: $email,
+                vinNumber: $vinNumber,
                 shippingAddress: $address,
                 billingAddress: $address}) {
             orderErrors {
@@ -2722,7 +2749,11 @@ def test_order_update(
     assert not order.shipping_address.first_name == graphql_address_data["firstName"]
     assert not order.billing_address.last_name == graphql_address_data["lastName"]
     order_id = graphene.Node.to_global_id("Order", order.id)
-    variables = {"id": order_id, "email": email, "address": graphql_address_data}
+    variables = {
+        "id": order_id, "email": email,
+        "vinNumber": 'test',
+        "address": graphql_address_data
+    }
     response = staff_api_client.post_graphql(
         ORDER_UPDATE_MUTATION, variables, permissions=[permission_manage_orders]
     )
@@ -2755,7 +2786,11 @@ def test_order_update_with_draft_order(
     order.save()
     email = "not_default@example.com"
     order_id = graphene.Node.to_global_id("Order", order.id)
-    variables = {"id": order_id, "email": email, "address": graphql_address_data}
+    variables = {
+        "id": order_id, "email": email,
+        "vinNumber": 'test',
+        "address": graphql_address_data
+    }
     response = staff_api_client.post_graphql(
         ORDER_UPDATE_MUTATION, variables, permissions=[permission_manage_orders]
     )
@@ -2817,10 +2852,10 @@ def test_order_update_user_email_existing_user(
     order.save()
     query = """
         mutation orderUpdate(
-        $id: ID!, $email: String, $address: AddressInput) {
+        $id: ID!, $email: String, $address: AddressInput, $vinNumber: String!) {
             orderUpdate(
                 id: $id, input: {
-                    userEmail: $email, shippingAddress: $address,
+                    userEmail: $email, shippingAddress: $address, vinNumber: $vinNumber
                     billingAddress: $address}) {
                 errors {
                     field
@@ -2834,7 +2869,12 @@ def test_order_update_user_email_existing_user(
         """
     email = customer_user.email
     order_id = graphene.Node.to_global_id("Order", order.id)
-    variables = {"id": order_id, "address": graphql_address_data, "email": email}
+    variables = {
+        "id": order_id,
+        "address": graphql_address_data,
+        "email": email,
+        "vinNumber": 'test'
+    }
     response = staff_api_client.post_graphql(
         query, variables, permissions=[permission_manage_orders]
     )

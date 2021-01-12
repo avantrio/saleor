@@ -945,6 +945,7 @@ def test_customer_create(
         new_customer.default_shipping_address,
         new_customer.default_billing_address,
     )
+    address.location_data = {}
     assert shipping_address == address
     assert billing_address == address
     assert shipping_address.pk != billing_address.pk

@@ -444,6 +444,7 @@ def address(db):  # pylint: disable=W0613
         city="WROCŁAW",
         postal_code="53-601",
         country="PL",
+        location_data=None,
         phone="+48713988102",
     )
 

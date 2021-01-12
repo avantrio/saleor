@@ -206,6 +206,7 @@ def test_address_as_data(address):
         "postal_code": "53-601",
         "country": "PL",
         "country_area": "",
+        "location_data": None,
         "phone": "+48713988102",
     }
 

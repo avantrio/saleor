@@ -20,6 +20,7 @@ from ..core.scalars import PositiveDecimal
 from ..core.types import common as common_types
 from ..core.utils import from_global_id_strict_type
 from .types import Payment, PaymentInitialized
+from ...plugins.models import PluginConfiguration
 
 
 class PaymentInput(graphene.InputObjectType):
@@ -161,11 +162,13 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             """
             HyperPay Gateway Setup
             """
+            gateway_plugin = PluginConfiguration.objects.get(identifier='HyperPay')
+
             opp.config.configure(mode=0 if settings.DEBUG else 3)
             api = opp.core.API(
-                **{"authentication.userId": settings.HYPER_PAY_USER,
-                   "authentication.password": settings.HYPER_PAY_PASSWORD,
-                   "authentication.entityId": settings.HYPER_PAY_TOKEN
+                **{"authentication.userId": gateway_plugin.configuration[0]['value'],
+                   "authentication.password": gateway_plugin.configuration[1]['value'],
+                   "authentication.entityId": gateway_plugin.configuration[2]['value']
                    })
 
             gateway_checkout = api.checkouts().create(**{"amount": amount,

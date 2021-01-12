@@ -517,6 +517,7 @@ PLUGINS = [
     "saleor.payment.gateways.braintree.plugin.BraintreeGatewayPlugin",
     "saleor.payment.gateways.razorpay.plugin.RazorpayGatewayPlugin",
     "saleor.payment.gateways.adyen.plugin.AdyenGatewayPlugin",
+    "saleor.payment.gateways.hyperpay.plugin.HyperPayGatewayPlugin",
     "saleor.plugins.invoicing.plugin.InvoicingPlugin",
 ]
 
@@ -581,8 +582,4 @@ JWT_TTL_REFRESH = timedelta(seconds=parse(os.environ.get("JWT_TTL_REFRESH", "30 
 JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
     seconds=parse(os.environ.get("JWT_TTL_REQUEST_EMAIL_CHANGE", "1 hour")),
 )
-
-HYPER_PAY_TOKEN = os.environ.get("HYPER_PAY_TOKEN", '8a8294174b7ecb28014b9699220015ca')
-HYPER_PAY_USER = os.environ.get("HYPER_PAY_USER", '8a8294174b7ecb28014b9699220015cc')
-HYPER_PAY_PASSWORD = os.environ.get("HYPER_PAY_PASSWORD", 'sy6KJsT8')
-
+PATTERNS_IGNORED_IN_QUERY_CAPTURES = None

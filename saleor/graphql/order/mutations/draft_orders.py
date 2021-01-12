@@ -75,7 +75,7 @@ class DraftOrderInput(InputObjectType):
         ),
     )
     vin_number = graphene.String(
-        required=False, description="VIN number."
+        required=True, description="VIN number."
     )
 
 
@@ -138,6 +138,7 @@ class DraftOrderCreate(ModelMutation, I18nMixin):
         shipping_address = data.pop("shipping_address", None)
         redirect_url = data.pop("redirect_url", None)
         billing_address = data.pop("billing_address", None)
+        vin_number = data.pop("vin_number", None)
         cleaned_input = super().clean_input(info, instance, data)
         lines = data.pop("lines", None)
         channel_id = data.get("channel", None)
@@ -171,6 +172,7 @@ class DraftOrderCreate(ModelMutation, I18nMixin):
             cleaned_input["quantities"] = quantities
 
         cleaned_input["status"] = OrderStatus.DRAFT
+        cleaned_input["vin_number"] = vin_number
         display_gross_prices = info.context.site.settings.display_gross_prices
         cleaned_input["display_gross_prices"] = display_gross_prices
 
