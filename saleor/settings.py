@@ -582,4 +582,3 @@ JWT_TTL_REFRESH = timedelta(seconds=parse(os.environ.get("JWT_TTL_REFRESH", "30 
 JWT_TTL_REQUEST_EMAIL_CHANGE = timedelta(
     seconds=parse(os.environ.get("JWT_TTL_REQUEST_EMAIL_CHANGE", "1 hour")),
 )
-PATTERNS_IGNORED_IN_QUERY_CAPTURES = None

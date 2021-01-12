@@ -153,6 +153,8 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         data = data["input"]
         gateway = data["gateway"]
 
+        cls.validate_gateway(gateway, checkout.currency)
+        cls.validate_return_url(data)
         checkout_total = calculate_checkout_total_with_gift_cards(
             checkout, info.context.discounts
         )
@@ -182,8 +184,6 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
             HyperPay Gateway Setup
             """
 
-        cls.validate_gateway(gateway, checkout.currency)
-        cls.validate_return_url(data)
         cls.validate_token(info.context.plugins, gateway, data)
 
         clean_checkout_shipping(
