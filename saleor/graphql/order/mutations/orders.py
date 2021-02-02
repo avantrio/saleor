@@ -18,7 +18,7 @@ from ....order.actions import (
 )
 from ....order.error_codes import OrderErrorCode
 from ....order.utils import get_valid_shipping_methods_for_order, update_order_prices
-from ....payment import CustomPaymentChoices, PaymentError, TransactionKind, gateway
+from ....payment import PaymentError, TransactionKind, gateway
 from ....shipping import models as shipping_models
 from ...account.types import AddressInput
 from ...core.mutations import BaseMutation, ModelMutation
@@ -109,11 +109,11 @@ def clean_void_payment(payment):
 
 def clean_refund_payment(payment):
     clean_payment(payment)
-    if payment.gateway == CustomPaymentChoices.MANUAL:
+    if not payment.can_refund():
         raise ValidationError(
             {
                 "payment": ValidationError(
-                    "Manual payments can not be refunded.",
+                    "Payment cannot be refunded.",
                     code=OrderErrorCode.CANNOT_REFUND,
                 )
             }
@@ -259,7 +259,11 @@ class OrderUpdateShipping(BaseMutation):
         clean_order_update_shipping(order, method)
 
         order.shipping_method = method
-        order.shipping_price = info.context.plugins.calculate_order_shipping(order)
+        shipping_price = info.context.plugins.calculate_order_shipping(order)
+        order.shipping_price = shipping_price
+        order.shipping_tax_rate = info.context.plugins.get_order_shipping_tax_rate(
+            order, shipping_price
+        )
         order.shipping_method_name = method.name
         order.save(
             update_fields=[
@@ -268,6 +272,7 @@ class OrderUpdateShipping(BaseMutation):
                 "shipping_method_name",
                 "shipping_price_net_amount",
                 "shipping_price_gross_amount",
+                "shipping_tax_rate",
             ]
         )
         update_order_prices(order, info.context.discounts)
@@ -310,7 +315,8 @@ class OrderAddNote(BaseMutation):
             raise ValidationError(
                 {
                     "message": ValidationError(
-                        "Message can't be empty.", code=OrderErrorCode.REQUIRED,
+                        "Message can't be empty.",
+                        code=OrderErrorCode.REQUIRED,
                     )
                 }
             )
@@ -321,7 +327,9 @@ class OrderAddNote(BaseMutation):
         order = cls.get_node_or_error(info, data.get("id"), only_type=Order)
         cleaned_input = cls.clean_input(info, order, data)
         event = events.order_note_added_event(
-            order=order, user=info.context.user, message=cleaned_input["message"],
+            order=order,
+            user=info.context.user,
+            message=cleaned_input["message"],
         )
         return OrderAddNote(order=order, event=event)
 
@@ -489,7 +497,9 @@ class OrderRefund(BaseMutation):
         # Confirm that we changed the status to refund. Some payment can receive
         # asynchronous webhook with update status
         if transaction.kind == TransactionKind.REFUND:
-            order_refunded(order, info.context.user, amount, payment)
+            order_refunded(
+                order, info.context.user, amount, payment, info.context.plugins
+            )
         return OrderRefund(order=order)
 
 
