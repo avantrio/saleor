@@ -1,6 +1,8 @@
 import graphene
+import opp.core
 from django.core.exceptions import ValidationError
 
+from ... import settings
 from ...checkout.calculations import calculate_checkout_total_with_gift_cards
 from ...checkout.checkout_cleaner import clean_billing_address, clean_checkout_shipping
 from ...checkout.utils import cancel_active_payments
@@ -18,6 +20,7 @@ from ..core.scalars import PositiveDecimal
 from ..core.types import common as common_types
 from ..core.utils import from_global_id_strict_type
 from .types import Payment, PaymentInitialized
+from ...plugins.models import PluginConfiguration
 
 
 class PaymentInput(graphene.InputObjectType):
@@ -151,13 +154,38 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
         gateway = data["gateway"]
 
         cls.validate_gateway(gateway, checkout.currency)
-        cls.validate_token(info.context.plugins, gateway, data)
         cls.validate_return_url(data)
-
         checkout_total = calculate_checkout_total_with_gift_cards(
             checkout, info.context.discounts
         )
         amount = data.get("amount", checkout_total.gross.amount)
+
+        if gateway.lower() == 'hyperpay':
+            """
+            HyperPay Gateway Setup
+            """
+            gateway_plugin = PluginConfiguration.objects.get(identifier='HyperPay')
+
+            opp.config.configure(mode=0 if settings.DEBUG else 3)
+            api = opp.core.API(
+                **{"authentication.userId": gateway_plugin.configuration[0]['value'],
+                   "authentication.password": gateway_plugin.configuration[1]['value'],
+                   "authentication.entityId": gateway_plugin.configuration[2]['value']
+                   })
+
+            gateway_checkout = api.checkouts().create(**{"amount": amount,
+                                                         "currency": checkout.currency,
+                                                         "paymentType": "DB"
+                                                         })
+
+            data['token'] = gateway_checkout['id']
+
+            """
+            HyperPay Gateway Setup
+            """
+
+        cls.validate_token(info.context.plugins, gateway, data)
+
         clean_checkout_shipping(
             checkout, list(checkout), info.context.discounts, PaymentErrorCode
         )

@@ -136,6 +136,7 @@ def try_payment_action(order, user, payment, func, *args, **kwargs):
 class OrderUpdateInput(graphene.InputObjectType):
     billing_address = AddressInput(description="Billing address of the customer.")
     user_email = graphene.String(description="Email address of the customer.")
+    vin_number = graphene.String(description="Vin Number.")
     shipping_address = AddressInput(description="Shipping address of the customer.")
 
 
@@ -158,7 +159,9 @@ class OrderUpdate(DraftOrderCreate):
         draft_order_cleaned_input = super().clean_input(info, instance, data)
 
         # We must to filter out field added by DraftOrderUpdate
-        editable_fields = ["billing_address", "shipping_address", "user_email"]
+        editable_fields = [
+            "billing_address", "shipping_address", "user_email", "vin_number"
+        ]
         cleaned_input = {}
         for key in draft_order_cleaned_input:
             if key in editable_fields:

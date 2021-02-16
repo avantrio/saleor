@@ -96,7 +96,7 @@ class Order(ModelWithMetadata):
         Address, related_name="+", editable=False, null=True, on_delete=models.SET_NULL
     )
     user_email = models.EmailField(blank=True, default="")
-
+    vin_number = models.CharField(max_length=255, null=True)
     currency = models.CharField(max_length=settings.DEFAULT_CURRENCY_CODE_LENGTH,)
 
     shipping_method = models.ForeignKey(

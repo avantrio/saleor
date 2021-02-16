@@ -109,6 +109,7 @@ class Checkout(CountableDjangoObjectType):
         required=True,
     )
     email = graphene.String(description="Email of a customer.", required=True)
+    vin_number = graphene.String(description="VIN number.", required=False)
     gift_cards = graphene.List(
         GiftCard, description="List of gift cards associated with this checkout."
     )
@@ -152,6 +153,7 @@ class Checkout(CountableDjangoObjectType):
             "last_change",
             "channel",
             "note",
+            "vin_number",
             "quantity",
             "shipping_address",
             "translated_discount_name",

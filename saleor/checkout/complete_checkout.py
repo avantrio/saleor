@@ -268,6 +268,7 @@ def _create_order(*, checkout: Checkout, order_data: dict, user: User) -> Order:
         checkout_token=checkout.token,
         status=status,
         channel=checkout.channel,
+        vin_number=checkout.vin_number,
     )
     for line in order_lines:
         line.order_id = order.pk

@@ -185,6 +185,7 @@ class CheckoutCreateInput(graphene.InputObjectType):
         )
     )
     billing_address = AddressInput(description="Billing address of the customer.")
+    vin_number = graphene.String(required=False, description='VIN number.')
 
 
 class CheckoutCreate(ModelMutation, I18nMixin):
@@ -832,6 +833,7 @@ class CheckoutComplete(BaseMutation):
                 "see the order details. URL in RFC 1808 format."
             ),
         )
+        location_data = graphene.String(required=False)
         payment_data = graphene.JSONString(
             required=False,
             description=(

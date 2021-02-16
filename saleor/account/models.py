@@ -8,6 +8,7 @@ from django.contrib.auth.models import (
     Permission,
     PermissionsMixin,
 )
+from django.contrib.postgres.fields import HStoreField
 from django.db import models
 from django.db.models import JSONField  # type: ignore
 from django.db.models import Q, QuerySet, Value
@@ -62,6 +63,7 @@ class Address(models.Model):
     postal_code = models.CharField(max_length=20, blank=True)
     country = CountryField()
     country_area = models.CharField(max_length=128, blank=True)
+    location_data = HStoreField(null=True, blank=True)
     phone = PossiblePhoneNumberField(blank=True, default="")
 
     objects = AddressQueryset.as_manager()

@@ -56,6 +56,7 @@ class AddressData:
     country: str
     country_area: str
     phone: str
+    location_data: str
 
 
 @dataclass
