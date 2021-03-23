@@ -186,6 +186,7 @@ class CheckoutCreateInput(graphene.InputObjectType):
     )
     billing_address = AddressInput(description="Billing address of the customer.")
     vin_number = graphene.String(required=False, description='VIN number.')
+    note = graphene.String(required=False, description='Customer note.')
 
 
 class CheckoutCreate(ModelMutation, I18nMixin):
@@ -389,6 +390,12 @@ class CheckoutCreate(ModelMutation, I18nMixin):
             if checkout is not None:
                 # If user has an active checkout, return it without any
                 # modifications.
+                if data["input"]["note"]:
+                    checkout.note = data["input"]["note"]
+                
+                if data["input"]["vin_number"]:
+                    checkout.vin_number = data["input"]["vin_number"]
+
                 return CheckoutCreate(checkout=checkout, created=False)
 
             checkout = models.Checkout(user=user)
