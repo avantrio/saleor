@@ -390,10 +390,10 @@ class CheckoutCreate(ModelMutation, I18nMixin):
             if checkout is not None:
                 # If user has an active checkout, return it without any
                 # modifications.
-                if data["input"]["note"]:
+                if "note" in data["input"]:
                     checkout.note = data["input"]["note"]
                 
-                if data["input"]["vin_number"]:
+                if "vin_number" in data["input"]:
                     checkout.vin_number = data["input"]["vin_number"]
 
                 return CheckoutCreate(checkout=checkout, created=False)

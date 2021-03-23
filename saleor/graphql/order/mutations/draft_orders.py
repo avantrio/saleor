@@ -75,7 +75,7 @@ class DraftOrderInput(InputObjectType):
         ),
     )
     vin_number = graphene.String(
-        required=True, description="VIN number."
+        required=False, description="VIN number."
     )
 
 

@@ -136,7 +136,7 @@ def try_payment_action(order, user, payment, func, *args, **kwargs):
 class OrderUpdateInput(graphene.InputObjectType):
     billing_address = AddressInput(description="Billing address of the customer.")
     user_email = graphene.String(description="Email address of the customer.")
-    vin_number = graphene.String(description="Vin Number.")
+    vin_number = graphene.String(description="Vin Number.", required=False)
     shipping_address = AddressInput(description="Shipping address of the customer.")
 
 

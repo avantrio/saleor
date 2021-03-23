@@ -64,7 +64,6 @@ class ProductSyncPlugin(BasePlugin):
 
         if product_variant_instance is not None:
             # only update pricing in this case 
-            
             for variant_channel in product_variant_instance.channel_listings.all():
                 variant_channel.price_amount = product_data["item_price"]
                 variant_channel.cost_price_amount = product_data["item_price"]

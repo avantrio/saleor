@@ -361,7 +361,7 @@ class Order(CountableDjangoObjectType):
     subtotal = graphene.Field(
         TaxedMoney, description="The sum of line prices not including shipping."
     )
-    vin_number = graphene.String(description="VIN number of the vehicle.")
+    vin_number = graphene.String(description="VIN number of the vehicle.", required=False)
     gift_cards = graphene.List(GiftCard, description="List of user gift cards.")
     status_display = graphene.String(description="User-friendly order status.")
     can_finalize = graphene.Boolean(
