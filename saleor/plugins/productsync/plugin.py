@@ -141,20 +141,20 @@ class ProductSyncPlugin(BasePlugin):
         # check signatures and headers.
         if path == '/sync':
             # sync products with the external API
-            try:
-                api_data = requests.get(SYNC_URL, auth=(SYNC_USERNAME, SYNC_PASSWORD))
-                api_data = api_data.json()
+            api_data = requests.get(SYNC_URL, auth=(SYNC_USERNAME, SYNC_PASSWORD))
+            api_data = api_data.json()
 
-                # product_data = api_data[12]
-                # self._add_product(product_data)
+            for product_data in api_data:
 
-                for product_data in api_data:
+                try:
+                    # product_data = api_data[12]
+                    # self._add_product(product_data)
                     self._add_product(product_data)
-                    
-            except Exception as e:
-                logger.error("[Product sync] Error syncing products")
-                logger.exception(e)
+
+                except Exception as e:
+                    logger.error("[Product sync] Error syncing products")
+                    logger.exception(e)
 
             # do something with the request
-            return JsonResponse(data={"paid":True})
+            return JsonResponse(data={"sync":True})
         return HttpResponseNotFound()
