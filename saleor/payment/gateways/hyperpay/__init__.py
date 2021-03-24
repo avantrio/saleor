@@ -52,7 +52,7 @@ def authorize(
     _success_response(
         success=True if response['result']['code'] in success_codes else False,
         amount=payment_information.amount,
-        currency=response['currency'] or payment_information.currency,
+        currency=response['currency'] if "currency" in response else payment_information.currency,
         customer_id=payment_information.customer_id or None,
         kind=TransactionKind.AUTH,
         raw_response=response,
@@ -102,7 +102,7 @@ def confirm(payment_information: PaymentData, config: GatewayConfig) -> GatewayR
 
 def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
     error = None
-    success = dummy_success()
+    success = True
     if not success:
         error = "Unable to process refund"
     return GatewayResponse(
