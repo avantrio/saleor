@@ -109,7 +109,9 @@ class ProductSyncPlugin(BasePlugin):
                 product=product,
                 channel=channel,
                 visible_in_listings=True,
-                available_for_purchase=datetime.datetime.now().date()
+                available_for_purchase=datetime.datetime.now().date(),
+                publication_date=datetime.datetime.now().date(),
+                is_published=True
             )
             channel_listing.save()
 
@@ -143,7 +145,7 @@ class ProductSyncPlugin(BasePlugin):
                 api_data = requests.get(SYNC_URL, auth=(SYNC_USERNAME, SYNC_PASSWORD))
                 api_data = api_data.json()
 
-                product_data = api_data[7]
+                product_data = api_data[12]
                 self._add_product(product_data)
             except Exception as e:
                 logger.error("[Product sync] Error syncing products")
