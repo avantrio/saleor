@@ -792,13 +792,13 @@ def create_channel(channel_name, currency_code, slug=None):
 
 def create_channels():
     yield create_channel(
-        channel_name="Channel-USD",
-        currency_code="USD",
-        slug=settings.DEFAULT_CHANNEL_SLUG,
+        channel_name="Channel-SAR",
+        currency_code="SAR",
+        slug="sar"
     )
-    yield create_channel(
-        channel_name="Channel-PLN", currency_code="PLN",
-    )
+    # yield create_channel(
+    #     channel_name="Channel-PLN", currency_code="PLN",
+    # )
 
 
 def create_shipping_zone(shipping_methods_names, countries, shipping_zone_name):

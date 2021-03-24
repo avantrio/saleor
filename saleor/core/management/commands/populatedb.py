@@ -97,8 +97,8 @@ class Command(BaseCommand):
         self.make_database_faster()
         create_images = not options["withoutimages"]
 
-        # for msg in create_channels():
-        #     self.stdout.write(msg)
+        for msg in create_channels():
+            self.stdout.write(msg)
 
         # for msg in create_shipping_zones():
         #     self.stdout.write(msg)

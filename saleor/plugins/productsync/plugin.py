@@ -108,6 +108,7 @@ class ProductSyncPlugin(BasePlugin):
             channel_listing = ProductChannelListing(
                 product=product,
                 channel=channel,
+                currency=channel.currency_code,
                 visible_in_listings=True,
                 available_for_purchase=datetime.datetime.now().date(),
                 publication_date=datetime.datetime.now().date(),
