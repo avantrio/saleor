@@ -83,15 +83,52 @@ def capture(payment_information: PaymentData, config: GatewayConfig) -> GatewayR
 
 
 def confirm(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
-    pass
+    """Perform confirm transaction."""
+    error = None
+    success = True
+    if not success:
+        error = "Unable to process capture"
+
+    return GatewayResponse(
+        is_success=success,
+        action_required=False,
+        kind=TransactionKind.CAPTURE,
+        amount=payment_information.amount,
+        currency=payment_information.currency,
+        transaction_id=payment_information.token,
+        error=error,
+    )
 
 
 def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
-    pass
-
+    error = None
+    success = dummy_success()
+    if not success:
+        error = "Unable to process refund"
+    return GatewayResponse(
+        is_success=success,
+        action_required=False,
+        kind=TransactionKind.REFUND,
+        amount=payment_information.amount,
+        currency=payment_information.currency,
+        transaction_id=payment_information.token,
+        error=error,
+    )
 
 def void(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
-    pass
+    error = None
+    success = True
+    if not success:
+        error = "Unable to void the transaction."
+    return GatewayResponse(
+        is_success=success,
+        action_required=False,
+        kind=TransactionKind.VOID,
+        amount=payment_information.amount,
+        currency=payment_information.currency,
+        transaction_id=payment_information.token,
+        error=error,
+    )
 
 
 def list_client_sources(
