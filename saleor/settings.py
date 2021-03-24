@@ -67,7 +67,6 @@ DATABASES = {
     )
 }
 
-
 TIME_ZONE = "UTC"
 LANGUAGE_CODE = "en"
 LANGUAGES = [
@@ -518,7 +517,9 @@ PLUGINS = [
     "saleor.payment.gateways.razorpay.plugin.RazorpayGatewayPlugin",
     "saleor.payment.gateways.adyen.plugin.AdyenGatewayPlugin",
     "saleor.payment.gateways.hyperpay.plugin.HyperPayGatewayPlugin",
+    "saleor.payment.gateways.cod.plugin.CoDGatewayPlugin",
     "saleor.plugins.invoicing.plugin.InvoicingPlugin",
+    "saleor.plugins.productsync.plugin.ProductSyncPlugin",
 ]
 
 # Plugin discovery
