@@ -145,8 +145,12 @@ class ProductSyncPlugin(BasePlugin):
                 api_data = requests.get(SYNC_URL, auth=(SYNC_USERNAME, SYNC_PASSWORD))
                 api_data = api_data.json()
 
-                product_data = api_data[12]
-                self._add_product(product_data)
+                # product_data = api_data[12]
+                # self._add_product(product_data)
+
+                for product_data in api_data:
+                    self._add_product(product_data)
+                    
             except Exception as e:
                 logger.error("[Product sync] Error syncing products")
                 logger.exception(e)
