@@ -242,7 +242,9 @@ class BaseMutation(graphene.Mutation):
         from django.db import models
 
         opts = instance._meta
-
+        print(instance._meta)
+        print(cleaned_data)
+        print(opts)
         for f in opts.fields:
             if any(
                 [

@@ -313,7 +313,7 @@ class CheckoutCreate(ModelMutation, I18nMixin):
                 cleaned_input["variants"],
                 cleaned_input["quantities"],
             ) = cls.process_checkout_lines(lines, country, channel.id)
-
+        print(data)
         cleaned_input["shipping_address"] = cls.retrieve_shipping_address(user, data)
         cleaned_input["billing_address"] = cls.retrieve_billing_address(user, data)
 
@@ -328,7 +328,7 @@ class CheckoutCreate(ModelMutation, I18nMixin):
     def save_addresses(cls, instance: models.Checkout, cleaned_input: dict):
         shipping_address = cleaned_input.get("shipping_address")
         billing_address = cleaned_input.get("billing_address")
-
+        
         updated_fields = ["last_change"]
 
         if shipping_address and instance.is_shipping_required():
@@ -380,7 +380,7 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         channel = cls.clean_channel(channel_input)
         if channel:
             data["input"]["channel"] = channel
-
+        
         # `perform_mutation` is overridden to properly get or create a checkout
         # instance here and abort mutation if needed.
         if user.is_authenticated:
@@ -396,11 +396,14 @@ class CheckoutCreate(ModelMutation, I18nMixin):
                 if "vin_number" in data["input"]:
                     checkout.vin_number = data["input"]["vin_number"]
 
-                return CheckoutCreate(checkout=checkout, created=False)
+                # return CheckoutCreate(checkout=checkout, created=False)
+                # remove existing checkout
+                checkout.delete()
 
             checkout = models.Checkout(user=user)
         else:
             checkout = models.Checkout()
+
         cleaned_input = cls.clean_input(info, checkout, data.get("input"))
         checkout = cls.construct_instance(checkout, cleaned_input)
         cls.clean_instance(info, checkout)

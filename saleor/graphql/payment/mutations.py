@@ -172,12 +172,13 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
                    "authentication.password": gateway_plugin.configuration[1]['value'],
                    "authentication.entityId": gateway_plugin.configuration[2]['value']
                    })
-
+            
+            # TODO : here the currency should change to: checkout.currency
             gateway_checkout = api.checkouts().create(**{"amount": amount,
-                                                         "currency": checkout.currency,
-                                                         "paymentType": "DB"
-                                                         })
-
+                                                         "currency": "USD",
+                                                         "paymentType": "PA"
+                                                        })
+            print(gateway_checkout)
             data['token'] = gateway_checkout['id']
 
             """

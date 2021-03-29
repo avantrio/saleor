@@ -31,7 +31,7 @@ def authorize(
             last_4="1234",
             exp_year=2222,
             exp_month=12,
-            brand="dummy_visa",
+            brand="COD",
             name="Holder name",
             type="card",
         ),
@@ -64,8 +64,8 @@ def capture(payment_information: PaymentData, config: GatewayConfig) -> GatewayR
     return GatewayResponse(
         is_success=success,
         action_required=False,
-        kind=TransactionKind.PENDING,
-        amount=0,
+        kind=TransactionKind.CAPTURE,
+        amount=payment_information.amount,
         currency=payment_information.currency,
         transaction_id=payment_information.token,
         error=error,
@@ -90,8 +90,8 @@ def confirm(payment_information: PaymentData, config: GatewayConfig) -> GatewayR
     return GatewayResponse(
         is_success=success,
         action_required=False,
-        kind=TransactionKind.PENDING,
-        amount=0,
+        kind=TransactionKind.CAPTURE,
+        amount=payment_information.amount,
         currency=payment_information.currency,
         transaction_id=payment_information.token,
         error=error,
@@ -121,10 +121,11 @@ def process_payment(
     token = payment_information.token
 
     # Process payment normally if payment token is valid
-    if token not in dict(ChargeStatus.CHOICES):
-        return capture(payment_information, config)
+    # if token not in dict(ChargeStatus.CHOICES):
+    #     return capture(payment_information, config)
 
     authorize_response = authorize(payment_information, config)
+
     return authorize_response
 
     # Process payment by charge status which is selected in the payment form

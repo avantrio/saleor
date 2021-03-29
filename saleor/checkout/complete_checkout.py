@@ -263,6 +263,7 @@ def _create_order(*, checkout: Checkout, order_data: dict, user: User) -> Order:
         if site_settings.automatically_confirm_all_new_orders
         else OrderStatus.UNCONFIRMED
     )
+    
     order = Order.objects.create(
         **order_data,
         checkout_token=checkout.token,

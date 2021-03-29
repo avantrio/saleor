@@ -32,6 +32,8 @@ success_codes = (
     '000.300.102'
 )
 
+DEBUG_CURRENCY = "USD"
+
 
 def decode_b64_string(string):
     base64_bytes = string.encode('ascii')
@@ -47,88 +49,113 @@ def get_client_token(**_):
 def authorize(
         payment_information: PaymentData, config: GatewayConfig
 ) -> GatewayResponse:
+
     client = _get_client(**config.connection_params)
-    response = client.checkouts(checkout_id=payment_information.token).get()
-    _success_response(
-        success=True if response['result']['code'] in success_codes else False,
-        amount=payment_information.amount,
-        currency=response['currency'] if "currency" in response else payment_information.currency,
-        customer_id=payment_information.customer_id or None,
-        kind=TransactionKind.AUTH,
-        raw_response=response,
-    )
-    gateway_response = _success_response(
-        success=True if response['result']['code'] in success_codes else False,
-        amount=payment_information.amount,
-        currency=response['currency'] or payment_information.currency,
-        customer_id=payment_information.customer_id or None,
-        kind=TransactionKind.CAPTURE,
-        raw_response=response,
-    )
-    return gateway_response
-
-
+    
+    try:
+        response = client.checkouts(checkout_id=payment_information.token).get()
+        gateway_response = _success_response(
+            success=True if response['result']['code'] in success_codes else False,
+            amount=payment_information.amount,
+            currency=DEBUG_CURRENCY,
+            customer_id=payment_information.customer_id or None,
+            kind=TransactionKind.AUTH,
+            raw_response=response,
+        )
+        return gateway_response
+    except:
+        print("Error in processing payment")
+        return _error_response(kind=TransactionKind.AUTH, payment_info=payment_information, action_required=False)
+    
 def capture(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
     client = _get_client(**config.connection_params)
-    response = client.checkouts(checkout_id=payment_information.token).get()
-    response = _success_response(
-        success=True if response['result']['code'] in success_codes else False,
-        amount=response['amount'] or payment_information.amount,
-        currency=response['currency'] or payment_information.currency,
-        customer_id=payment_information.customer_id or None,
-        kind=TransactionKind.CONFIRM,
-        raw_response=response,
-    )
-    return response
+    try:
+        response = client.payments(payment_id=payment_information.token).create(**{
+            "paymentType": "CP",
+            "amount": "%0.2f" % payment_information.amount,
+            "currency": DEBUG_CURRENCY
+        })
+        gateway_response = _success_response(
+            success=True if response['result']['code'] in success_codes else False,
+            amount=payment_information.amount,
+            currency=payment_information.currency,
+            customer_id=payment_information.customer_id or None,
+            kind=TransactionKind.CAPTURE,
+            raw_response=response,
+        )
+        return gateway_response
+    except Exception as e:
+        print("Error in processing payment")
+        raise e
+        return _error_response(
+            kind=TransactionKind.CAPTURE_FAILED, 
+            payment_info=payment_information, 
+            action_required=False,
+            exc=e
+        )
 
 
 def confirm(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
     """Perform confirm transaction."""
-    error = None
-    success = True
-    if not success:
-        error = "Unable to process capture"
-
-    return GatewayResponse(
-        is_success=success,
-        action_required=False,
-        kind=TransactionKind.CAPTURE,
-        amount=payment_information.amount,
-        currency=payment_information.currency,
-        transaction_id=payment_information.token,
-        error=error,
-    )
+    
+    print("Capturing the remainder")
+    return capture(payment_information, config)
 
 
 def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
-    error = None
-    success = True
-    if not success:
-        error = "Unable to process refund"
-    return GatewayResponse(
-        is_success=success,
-        action_required=False,
-        kind=TransactionKind.REFUND,
-        amount=payment_information.amount,
-        currency=payment_information.currency,
-        transaction_id=payment_information.token,
-        error=error,
-    )
+    client = _get_client(**config.connection_params)
+    try:
+        response = client.payments(payment_id=payment_information.token).create(**{
+            "paymentType": "RF",
+            "amount": "%0.2f" % payment_information.amount,
+            "currency": DEBUG_CURRENCY
+        })
+        gateway_response = _success_response(
+            success=True if response['result']['code'] in success_codes else False,
+            amount=payment_information.amount,
+            currency=payment_information.currency,
+            customer_id=payment_information.customer_id or None,
+            kind=TransactionKind.VOID,
+            raw_response=response,
+        )
+        return gateway_response
+    except Exception as e:
+        print("Error in processing payment")
+        raise e
+        return _error_response(
+            kind=TransactionKind.AUTH, 
+            payment_info=payment_information, 
+            action_required=False,
+            exc=e
+        )
 
 def void(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
-    error = None
-    success = True
-    if not success:
-        error = "Unable to void the transaction."
-    return GatewayResponse(
-        is_success=success,
-        action_required=False,
-        kind=TransactionKind.VOID,
-        amount=payment_information.amount,
-        currency=payment_information.currency,
-        transaction_id=payment_information.token,
-        error=error,
-    )
+    client = _get_client(**config.connection_params)
+    
+    try:
+        response = client.payments(payment_id=payment_information.token).create(**{
+            "paymentType": "RV",
+            "amount": "%0.2f" % payment_information.amount,
+            "currency": DEBUG_CURRENCY
+        })
+        gateway_response = _success_response(
+            success=True if response['result']['code'] in success_codes else False,
+            amount=payment_information.amount,
+            currency=payment_information.currency,
+            customer_id=payment_information.customer_id or None,
+            kind=TransactionKind.VOID,
+            raw_response=response,
+        )
+        return gateway_response
+    except Exception as e:
+        print("Error in processing payment")
+        raise e
+        return _error_response(
+            kind=TransactionKind.AUTH, 
+            payment_info=payment_information, 
+            action_required=False,
+            exc=e
+        )
 
 
 def list_client_sources(
@@ -154,7 +181,7 @@ def _get_client(**connection_params):
 
 def _error_response(
         kind: str,  # use TransactionKind class
-        # exc: stripe.error.StripeError,
+        exc,
         payment_info: PaymentData,
         action_required: bool = False,
 ) -> GatewayResponse:
@@ -164,9 +191,9 @@ def _error_response(
         transaction_id=payment_info.token,
         amount=payment_info.amount,
         currency=payment_info.currency,
-        # error=exc.user_message,
+        error=exc,
         kind=kind,
-        # raw_response=exc.json_body or {},
+        raw_response={},
         customer_id=payment_info.customer_id,
     )
 
@@ -183,7 +210,7 @@ def _success_response(
     return GatewayResponse(
         is_success=success,
         action_required=False if success else True,
-        transaction_id=raw_response['id'],
+        transaction_id=raw_response['id'] if "id" in raw_response else "",
         amount=amount,
         currency=currency,
         error=None,
