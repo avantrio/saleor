@@ -348,6 +348,57 @@ class OrderCancel(BaseMutation):
         cancel_order(order=order, user=info.context.user)
         return OrderCancel(order=order)
 
+class CustomerOrderCancel(BaseMutation):
+    order = graphene.Field(Order, description="Canceled order.")
+
+    class Arguments:
+        id = graphene.ID(required=True, description="ID of the order to cancel.")
+
+    class Meta:
+        description = "Cancel an order by Customer."
+        error_type_class = OrderError
+        error_type_field = "order_errors"
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        user = info.context.user
+
+        if not user.is_authenticated:
+            raise ValidationError(
+                {
+                    "order": ValidationError(
+                        "Only authenticated users can access this action.",
+                        code=OrderErrorCode.CANNOT_CANCEL_ORDER,
+                    )
+                }
+            )
+
+        order = cls.get_node_or_error(info, data.get("id"), only_type=Order)
+
+        if order.user != user:
+            raise ValidationError(
+                {
+                    "order": ValidationError(
+                        "Only the order owner can cancel the order.",
+                        code=OrderErrorCode.CANNOT_CANCEL_ORDER,
+                    )
+                }
+            )
+
+        if order.status != OrderStatus.UNCONFIRMED:
+            raise ValidationError(
+                {
+                    "order": ValidationError(
+                        "Only unconfirmed orders can be canceled.",
+                        code=OrderErrorCode.CANNOT_CANCEL_ORDER,
+                    )
+                }
+            )
+
+        clean_order_cancel(order)
+        cancel_order(order=order, user=user)
+        return OrderCancel(order=order)
+
 
 class OrderMarkAsPaid(BaseMutation):
     order = graphene.Field(Order, description="Order marked as paid.")
