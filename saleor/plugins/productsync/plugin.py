@@ -11,9 +11,10 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.utils.text import slugify
 from django.db import transaction
 from ..base_plugin import BasePlugin
-from ...product.models import Product, ProductType, ProductVariant, ProductTranslation, ProductChannelListing, Channel, ProductVariantChannelListing
+from ...product.models import Product, ProductType, ProductVariant, ProductTranslation, ProductChannelListing, Channel, ProductVariantChannelListing, Category
 from ...attribute.utils import associate_attribute_values_to_instance
 from ...attribute.models import Attribute, AttributeValue, AttributeInputType, AttributeType
+from ...warehouse.models import Stock, Warehouse
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,21 @@ class ProductSyncPlugin(BasePlugin):
 
         return attribute_value
 
+    def _add_stock(self, variant):
+        warehouse = Warehouse.objects.get(slug="central")
+
+        if warehouse is None:
+            warehouse = Warehouse(name="Central", slug="central")
+            warehouse.save()
+
+        stock = Stock(
+            warehouse=warehouse,
+            product_variant=variant,
+            quantity=1
+        )
+
+        stock.save()
+
     @transaction.atomic
     def _add_product(self, product_data):
         # check if product exists
@@ -68,6 +84,8 @@ class ProductSyncPlugin(BasePlugin):
                 variant_channel.price_amount = product_data["item_price"]
                 variant_channel.cost_price_amount = product_data["item_price"]
                 variant_channel.save()
+
+            self._add_stock(product_variant_instance)
 
             return 
         
@@ -133,6 +151,17 @@ class ProductSyncPlugin(BasePlugin):
 
             associate_attribute_values_to_instance(product, attribute, attribute_value)
 
+
+        self._add_stock(product_variant)
+
+
+        category = Category.objects.get(slug="all")
+        if category is None:
+            category = Category(name="All", slug="all")
+            category.save()
+
+        product.category = category
+        product.save()
 
         print(product)
 

@@ -313,7 +313,7 @@ class CheckoutCreate(ModelMutation, I18nMixin):
                 cleaned_input["variants"],
                 cleaned_input["quantities"],
             ) = cls.process_checkout_lines(lines, country, channel.id)
-        print(data)
+        
         cleaned_input["shipping_address"] = cls.retrieve_shipping_address(user, data)
         cleaned_input["billing_address"] = cls.retrieve_billing_address(user, data)
 

@@ -35,6 +35,7 @@ from .mutations.orders import (
     OrderUpdate,
     OrderUpdateShipping,
     OrderVoid,
+    CustomerOrderCancel
 )
 from .resolvers import (
     resolve_draft_orders,
@@ -161,6 +162,7 @@ class OrderMutations(graphene.ObjectType):
     order_cancel = OrderCancel.Field()
     order_capture = OrderCapture.Field()
     order_confirm = OrderConfirm.Field()
+    customer_order_cancel = CustomerOrderCancel.Field()
 
     order_fulfill = OrderFulfill.Field()
     order_fulfillment_cancel = FulfillmentCancel.Field()
