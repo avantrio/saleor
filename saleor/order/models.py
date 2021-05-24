@@ -535,3 +535,40 @@ class OrderEvent(models.Model):
 
     def __repr__(self):
         return f"{self.__class__.__name__}(type={self.type!r}, user={self.user!r})"
+
+
+class OrderReturn(ModelWithMetadata):
+    order = models.ForeignKey(Order, related_name="returns", on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=100,
+        choices=OrderEvents.CHOICES,
+        default=OrderEvents.RETURN_REQUEST
+    )
+    created_at = models.DateTimeField(auto_created=True)
+    confirmed_at = models.DateTimeField(null=True)
+    confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        related_name='confirmed_returns',
+        on_delete=models.SET_NULL
+    )
+    lines = models.ManyToManyField(
+        OrderLine,
+        related_name='lines',
+        through="OrderReturnLine"
+    )
+
+
+class OrderReturnLine(ModelWithMetadata):
+    order_return = models.ForeignKey(
+        OrderReturn,
+        related_name='return_lines',
+        on_delete=models.CASCADE
+    )
+    order_line = models.ForeignKey(
+        OrderLine,
+        related_name='return_lines',
+        on_delete=models.CASCADE
+    )
+    quantity = models.PositiveIntegerField()
