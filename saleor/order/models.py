@@ -537,6 +537,11 @@ class OrderEvent(models.Model):
         return f"{self.__class__.__name__}(type={self.type!r}, user={self.user!r})"
 
 
+class OrderReturnQuerySet(models.QuerySet):
+    def unconfirmed(self):
+        return self.filter(status=OrderEvents.RETURN_REQUEST)
+
+
 class OrderReturn(ModelWithMetadata):
     order = models.ForeignKey(Order, related_name="returns", on_delete=models.CASCADE)
     status = models.CharField(
@@ -558,6 +563,8 @@ class OrderReturn(ModelWithMetadata):
         related_name='lines',
         through="OrderReturnLine"
     )
+
+    objects = OrderReturnQuerySet.as_manager()
 
 
 class OrderReturnLine(ModelWithMetadata):
