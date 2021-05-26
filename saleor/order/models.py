@@ -549,7 +549,7 @@ class OrderReturn(ModelWithMetadata):
         choices=OrderEvents.CHOICES,
         default=OrderEvents.RETURN_REQUEST
     )
-    created_at = models.DateTimeField(auto_created=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     confirmed_at = models.DateTimeField(null=True)
     confirmed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
