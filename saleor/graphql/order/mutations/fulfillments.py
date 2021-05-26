@@ -3,6 +3,7 @@ from collections import defaultdict
 import graphene
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import pluralize
+from django.utils import timezone
 
 from ....core.exceptions import InsufficientStock, PermissionDenied
 from ....core.permissions import OrderPermissions
@@ -658,3 +659,44 @@ class OrderRefundRequest(BaseMutation):
                 returns.return_lines.create(order_line=line, quantity=quantity)
 
         return cls(order=order, returns=returns)
+
+
+class OrderReturnConfirmation(BaseMutation):
+    returns = graphene.List(OrderReturn, description="Refund Requests.")
+    order = graphene.Field(Order, description="Order which fulfillment was refunded.")
+
+    class Arguments:
+        order_return = graphene.ID(
+            description="ID of the order return to confirm.", required=True
+        )
+
+    class Meta:
+        description = "Customer Refund Requests."
+        permissions = (OrderPermissions.MANAGE_ORDERS,)
+        error_type_class = OrderError
+        error_type_field = "refund_request_errors"
+
+    @classmethod
+    def clean_input(cls, info, order_return_id):
+        cleaned_input = {}
+        qs = order_models.OrderReturn.objects.all()
+        order_return = cls.get_node_or_error(
+            info, order_return_id, field="order_return", only_type=OrderReturn, qs=qs
+        )
+
+        cleaned_input['return'] = order_return
+        return cleaned_input
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        cleaned_input = cls.clean_input(info, data.get("order_return"))
+        order_return = cleaned_input["return"]
+        order = order_return.order
+
+        if order_return.status == OrderEvents.RETURN_REQUEST:
+            order_return.confirmed_at = timezone.now()
+            order_return.confirmed_by = info.context.user
+            order_return.status = OrderEvents.CONFIRM_RETURN
+            order_return.save()
+
+        return cls(order=order, returns=order.returns.all())
