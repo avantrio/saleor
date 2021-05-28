@@ -327,6 +327,17 @@ class OrderLine(CountableDjangoObjectType):
         return AllocationsByOrderLineIdLoader(info.context).load(root.id)
 
 
+class OrderReturn(CountableDjangoObjectType):
+    class Meta:
+        description = "Represents an order return request"
+        interfaces = [relay.Node, ObjectWithMetadata]
+        model = models.OrderReturn
+        exclude = [
+            "metadata",
+            "private_metadata",
+        ]
+
+
 class Order(CountableDjangoObjectType):
     fulfillments = graphene.List(
         Fulfillment, required=True, description="List of shipments for the order."
@@ -389,6 +400,9 @@ class Order(CountableDjangoObjectType):
     is_shipping_required = graphene.Boolean(
         description="Returns True, if order requires shipping.", required=True
     )
+    returns = graphene.List(
+        OrderReturn, required=False, description="List of order return requests."
+    )
 
     class Meta:
         description = "Represents an order in the shop."
@@ -417,6 +431,7 @@ class Order(CountableDjangoObjectType):
             "voucher",
             "weight",
             "redirect_url",
+            "returns",
             "vin_number",
         ]
 
@@ -620,3 +635,9 @@ class Order(CountableDjangoObjectType):
         channel = ChannelByIdLoader(info.context).load(root.channel_id)
 
         return Promise.all([voucher, channel]).then(wrap_voucher_with_channel_context)
+
+    @staticmethod
+    def resolve_returns(root: models.Order, _info):
+        return root.returns.all().order_by('status', '-created_at')
+
+

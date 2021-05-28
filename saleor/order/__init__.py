@@ -71,6 +71,8 @@ class OrderEvents:
     FULFILLMENT_REFUNDED = "fulfillment_refunded"
     TRACKING_UPDATED = "tracking_updated"
     NOTE_ADDED = "note_added"
+    RETURN_REQUEST = "return_request"
+    CONFIRM_RETURN = "confirm_return"
 
     # Used mostly for importing legacy data from before Enum-based events
     OTHER = "other"
@@ -104,6 +106,8 @@ class OrderEvents:
         (FULFILLMENT_REFUNDED, "Some items were refunded"),
         (TRACKING_UPDATED, "The fulfillment's tracking code was updated"),
         (NOTE_ADDED, "A note was added to the order"),
+        (RETURN_REQUEST, "Customer requested a return"),
+        (CONFIRM_RETURN, "Returned items was confirmed"),
         (OTHER, "An unknown order event containing a message"),
     ]
 
@@ -120,6 +124,7 @@ class OrderEventsEmails:
     ORDER_REFUND = "order_refund"
     FULFILLMENT = "fulfillment_confirmation"
     DIGITAL_LINKS = "digital_links"
+    RETURN_CONFIRMED = "return_confirmed"
 
     CHOICES = [
         (PAYMENT, "The payment confirmation email was sent"),
@@ -131,4 +136,5 @@ class OrderEventsEmails:
         (ORDER_REFUND, "The order refund confirmation email was sent"),
         (FULFILLMENT, "The fulfillment confirmation email was sent"),
         (DIGITAL_LINKS, "The email containing the digital links was sent"),
+        (RETURN_CONFIRMED, "The return confirmation email was sent"),
     ]
