@@ -327,7 +327,22 @@ class OrderLine(CountableDjangoObjectType):
         return AllocationsByOrderLineIdLoader(info.context).load(root.id)
 
 
+class OrderReturnLine(CountableDjangoObjectType):
+
+    class Meta:
+        description = "Represents an order return request"
+        interfaces = [relay.Node, ObjectWithMetadata]
+        model = models.OrderReturnLine
+        exclude = [
+            "metadata",
+            "private_metadata",
+        ]
+
 class OrderReturn(CountableDjangoObjectType):
+    lines = graphene.List(
+        lambda: OrderReturnLine, required=True, description="List of order lines."
+    )
+
     class Meta:
         description = "Represents an order return request"
         interfaces = [relay.Node, ObjectWithMetadata]
@@ -336,6 +351,12 @@ class OrderReturn(CountableDjangoObjectType):
             "metadata",
             "private_metadata",
         ]
+
+    @staticmethod
+    def resolve_lines(root: models.Order, info):
+        return models.OrderReturnLine.objects.filter(order_return=root)
+
+    
 
 
 class Order(CountableDjangoObjectType):

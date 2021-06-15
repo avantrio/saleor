@@ -590,7 +590,7 @@ class OrderRefundRequest(BaseMutation):
         order_lines_data = input.get("order_lines")
 
         if order_lines_data:
-            cls.clean_lines(order_lines_data, cleaned_input)
+            cls.clean_lines(order_lines_data, cleaned_input, order)
         return cleaned_input
 
     @classmethod
@@ -607,7 +607,7 @@ class OrderRefundRequest(BaseMutation):
         )
 
     @classmethod
-    def clean_lines(cls, lines_data, cleaned_input):
+    def clean_lines(cls, lines_data, cleaned_input, order):
         lines_ids = [line["order_line_id"] for line in lines_data]
         quantities_to_refund = [line["quantity"] for line in lines_data]
         lines_to_refund = cls.get_nodes_or_error(
@@ -620,6 +620,7 @@ class OrderRefundRequest(BaseMutation):
         )
         lines_to_refund = list(lines_to_refund)
         for line, quantity in zip(lines_to_refund, quantities_to_refund):
+            
             if line.quantity < quantity:
                 cls._raise_error_for_line(
                     "Quantity provided to refund is bigger than quantity from order "
@@ -628,14 +629,23 @@ class OrderRefundRequest(BaseMutation):
                     line.pk,
                     "order_line_id",
                 )
-            quantity_ready_to_refund = line.quantity_unfulfilled
-            if quantity_ready_to_refund < quantity:
+            
+            if line.order != order:
                 cls._raise_error_for_line(
-                    "Quantity provided to refund is bigger than unfulfilled quantity.",
+                    "Order line is not part of the current order",
                     "OrderLine",
                     line.pk,
                     "order_line_id",
                 )
+
+            # quantity_ready_to_refund = line.quantity_unfulfilled
+            # if quantity_ready_to_refund < quantity:
+            #     cls._raise_error_for_line(
+            #         "Quantity provided to refund is bigger than unfulfilled quantity.",
+            #         "OrderLine",
+            #         line.pk,
+            #         "order_line_id",
+            #     )
 
         cleaned_input["order_lines_quantities_to_refund"] = quantities_to_refund
         cleaned_input["order_lines_to_refund"] = lines_to_refund
@@ -651,12 +661,13 @@ class OrderRefundRequest(BaseMutation):
             status=OrderEvents.RETURN_REQUEST
         )
 
-        if created:
-            quantities_to_refund = cleaned_input["order_lines_quantities_to_refund"]
-            lines_to_refund = cleaned_input["order_lines_to_refund"]
-            for line, quantity in zip(lines_to_refund, quantities_to_refund):
-                print(line, quantity)
-                returns.return_lines.create(order_line=line, quantity=quantity)
+        if not created:
+            returns.return_lines.all().delete()
+
+        quantities_to_refund = cleaned_input["order_lines_quantities_to_refund"]
+        lines_to_refund = cleaned_input["order_lines_to_refund"]
+        for line, quantity in zip(lines_to_refund, quantities_to_refund):
+            returns.return_lines.create(order_line=line, quantity=quantity)
 
         return cls(order=order, returns=returns)
 
